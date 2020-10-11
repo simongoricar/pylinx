@@ -1,0 +1,7 @@
+﻿.idea
+config
+logs
+
+__pycache__
+
+*.old
