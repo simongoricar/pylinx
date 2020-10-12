@@ -16,7 +16,7 @@ from linxcore.utilities import Integer, generate_random_pass
 from linxcore.config import API_KEY, INSTANCE_URL, SCRIPT_DIR
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 CMD_UPLOAD_WIDTH = 72
 CMD_INFO_WIDTH = 72
