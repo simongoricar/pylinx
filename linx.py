@@ -8,7 +8,7 @@ import datetime
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import pyperclip
-from click import command, echo, style, option, argument, getchar, progressbar, group
+from click import command, echo, style, option, argument, getchar, progressbar, group, pass_context, Context
 from hurry.filesize import size
 
 from linxcore.utilities import Integer
@@ -40,8 +40,14 @@ log.addHandler(fh)
 # Commands
 #################
 @group()
-def cli():
-    pass
+@option("--working-dir",
+        default=os.curdir,
+        help="Manually sets the working directory. Any relative argument paths use this as the base.")
+@pass_context
+def cli(ctx: Context, working_dir: str):
+    # Pass the working_dir in a Context to other commands
+    ctx.ensure_object(dict)
+    ctx.obj["working_dir"] = working_dir
 
 
 @command(name="upload", help="Upload a file")
@@ -54,11 +60,14 @@ def cli():
 @option("--access-key", "-a",
         default=None, help="what the access key (file password) should be", show_default=True)
 @argument("file_path")
-def linx_upload(randomize: str, expiry_days: int, delete_key: str, access_key: str, file_path: str):
+@pass_context
+def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str, access_key: str, file_path: str):
+    working_dir = ctx.obj['working_dir']
+
     log.debug("Mode: UPLOAD")
     echo(style("**** Mode: UPLOAD ****".center(CMD_UPLOAD_WIDTH), bold=True, underline=True))
 
-    full_path = os.path.abspath(os.path.join(os.curdir, file_path))
+    full_path = os.path.abspath(os.path.join(working_dir, file_path))
     file_name = os.path.basename(full_path)
     randomize = "yes" if randomize.lower() == "yes" else "no"
     expiry_sec = expiry_days * 24 * 60 * 60
@@ -69,7 +78,7 @@ def linx_upload(randomize: str, expiry_days: int, delete_key: str, access_key: s
     echo(f"\tRandomize file name: \t" + style(randomize, fg="bright_black"))
     echo(f"\tExpire in: \t\t" + style(f"{expiry_days} days ({expiry_sec} seconds)", fg="bright_black"))
     echo(f"\tDelete key: \t\t" + style(delete_key, fg="bright_black"))
-    echo(f"\tAccess key: \t\t" + style(access_key, fg="bright_black"))
+    echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
     echo("\n")
 
     echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH), nl=False)
@@ -85,11 +94,17 @@ def linx_upload(randomize: str, expiry_days: int, delete_key: str, access_key: s
         "Linx-Api-Key": API_KEY,
         "Linx-Randomize": randomize,
         "Linx-Delete-Key": delete_key,
-        "Linx-Access-Key": access_key,
         "Linx-Expiry": str(expiry_sec),
         # other
         "Accept": "application/json",
     }
+    if access_key is not None:
+        full_headers = {
+            **full_headers,
+            **{
+                "Linx-Access-Key": access_key
+            }
+        }
 
     file_upload = open(full_path, "rb")
     log.debug(f"Uploading file \"{os.path.basename(full_path)}\" to instance {INSTANCE_URL}")
@@ -248,4 +263,4 @@ cli.add_command(linx_delete)
 # Run the appropriate command
 #################
 if __name__ == '__main__':
-    cli()
+    cli(obj={})
