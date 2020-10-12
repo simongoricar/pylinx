@@ -1,1 +1,1 @@
-poetry export -f requirements.txt > ../requirements.txt
+poetry export --without-hashes -f requirements.txt > ../requirements.txt
