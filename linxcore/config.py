@@ -47,15 +47,9 @@ config = TOMLConfig.from_filename(os.path.join(SCRIPT_DIR, "./config/linxConfig.
 # Tables
 ##########
 TABLE_SERVER = config.get_table("Server")
-TABLE_DEFAULTS = config.get_table("Defaults")
 
 ##########
 # Server
 ##########
 INSTANCE_URL = TABLE_SERVER.get("linx_instance_url")
 API_KEY = TABLE_SERVER.get("linx_api_key")
-
-##########
-# Defaults
-##########
-DEFAULT_DELETE_KEY = TABLE_DEFAULTS.get("delete_key")

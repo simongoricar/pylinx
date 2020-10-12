@@ -2,7 +2,7 @@
 import os
 import logging
 from json import loads
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlencode
 import datetime
 
 import requests
@@ -11,8 +11,8 @@ import pyperclip
 from click import command, echo, style, option, argument, getchar, progressbar, group, pass_context, Context
 from hurry.filesize import size
 
-from linxcore.utilities import Integer
-from linxcore.config import API_KEY, INSTANCE_URL, DEFAULT_DELETE_KEY, SCRIPT_DIR
+from linxcore.utilities import Integer, generate_random_pass
+from linxcore.config import API_KEY, INSTANCE_URL, SCRIPT_DIR
 
 
 __version__ = "0.1.0"
@@ -36,6 +36,14 @@ fh.setFormatter(formatter)
 log.addHandler(fh)
 
 
+def print_version(ctx: Context, _, value):
+    if not value or ctx.resilient_parsing:
+        return
+
+    echo(f"linx-pyclient version: {__version__}")
+    ctx.exit()
+
+
 #################
 # Commands
 #################
@@ -43,26 +51,36 @@ log.addHandler(fh)
 @option("--working-dir",
         default=os.curdir,
         help="Manually sets the working directory. Any relative argument paths use this as the base.")
+@option("--verbose", is_flag=True, help="Print more information")
+@option("--version", is_flag=True, is_eager=True, expose_value=False, callback=print_version)
 @pass_context
-def cli(ctx: Context, working_dir: str):
+def cli(ctx: Context, working_dir: str, verbose: bool):
     # Pass the working_dir in a Context to other commands
     ctx.ensure_object(dict)
     ctx.obj["working_dir"] = working_dir
+    ctx.obj["verbose"] = verbose
 
 
 @command(name="upload", help="Upload a file")
-@option("--randomize", "-r",
-        default="no", help="whether to randomize the file name", show_default=True)
+@option("--randomize", "-r", is_flag=True, help="whether to randomize the file name", show_default=True)
 @option("--expiry-days", "-e",
-        default=30, help="for how many days should the file be retained", show_default=True)
+        default=30, help="for how many days should the file be retained (maximum is set by the server!)",
+        show_default=True)
 @option("--delete-key", "-d",
-        default=DEFAULT_DELETE_KEY, help="what the delete key should be", show_default=True)
+        default=None, help="what the delete key should be [default: random]")
 @option("--access-key", "-a",
         default=None, help="what the access key (file password) should be", show_default=True)
 @argument("file_path")
 @pass_context
 def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str, access_key: str, file_path: str):
     working_dir = ctx.obj['working_dir']
+    is_verbose: bool = ctx.obj["verbose"]
+
+    if delete_key is None:
+        if is_verbose:
+            echo("No --delete-key passed, generating random one.")
+
+        delete_key = generate_random_pass(16)
 
     log.debug("Mode: UPLOAD")
     echo(style("**** Mode: UPLOAD ****".center(CMD_UPLOAD_WIDTH), bold=True, underline=True))
@@ -128,19 +146,33 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
 
         monitor = MultipartEncoderMonitor(mp, progress_callback)
 
-        resp = requests.post(
-            url=urljoin(INSTANCE_URL, "upload"), data=monitor,
-            headers={**full_headers, **{"Content-Type": mp.content_type}}
-        )
+        try:
+            resp = requests.post(
+                url=urljoin(INSTANCE_URL, "upload"), data=monitor,
+                headers={**full_headers, **{"Content-Type": mp.content_type}}
+            )
+        except requests.ConnectionError as e:
+            echo(style("Could not send the request.", fg="bright_red"))
+            if is_verbose:
+                echo(f"requests.ConnectionError: '{e}'")
+
+            return
 
         file_upload.close()
 
         if resp.status_code != 200:
-            log.debug(f"Something went wrong, status code is {resp.status_code} and content '{resp.content}'")
-            echo(f"Something went wrong, status code is {resp.status_code} and content '{resp.content}'")
+            log.error(f"Something went wrong, status code is {resp.status_code} and content '{resp.content}'")
+
+            echo(f"Something went wrong, status code is {resp.status_code}")
+            if is_verbose:
+                echo(f"Response body: '{resp.content}'\n")
+
             return
 
         data = loads(resp.content)
+
+        if is_verbose:
+            echo(f"Response JSON: '{data}'\n")
 
         file_url = data.get("url")
         direct_url = data.get("direct_url")
@@ -165,7 +197,10 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
 
 @command(name="info", help="Show information about a file (expiration, size, ...)")
 @argument("file_name")
-def linx_info(file_name: str):
+@pass_context
+def linx_info(ctx: Context, file_name: str):
+    is_verbose: bool = ctx.obj["verbose"]
+
     log.debug("Mode: INFO")
     echo(style("**** Mode: INFO ****".center(CMD_INFO_WIDTH), bold=True, underline=True))
 
@@ -175,12 +210,22 @@ def linx_info(file_name: str):
     }
 
     log.debug(f"Querying info about file: '{file_name}'")
+    try:
+        resp = requests.get(full_url, headers=headers)
+    except requests.ConnectionError as e:
+        echo(style("Could not send the request.", fg="bright_red"))
+        if is_verbose:
+            echo(f"requests.ConnectionError: '{e}'")
 
-    resp = requests.get(full_url, headers=headers)
+        return
 
     if resp.status_code == 404:
         echo()
         echo(style(f"File does not exist or has expired.".center(CMD_INFO_WIDTH), fg="bright_red"))
+
+        if is_verbose:
+            echo(f"Response body: '{resp.content}'\n")
+
         return
 
     elif resp.status_code != 200:
@@ -189,6 +234,9 @@ def linx_info(file_name: str):
         return
 
     data = loads(resp.content)
+
+    if is_verbose:
+        echo(f"Response JSON: '{data}'\n")
 
     date_now = int(datetime.datetime.now().timestamp())
     expiry = int(data.get("expiry"))
@@ -216,7 +264,8 @@ def linx_info(file_name: str):
 @argument("file_name")
 # TODO should this take the default if none is provided?
 @argument("delete_key")
-def linx_delete(file_name: str, delete_key: str):
+@pass_context
+def linx_delete(ctx: Context, file_name: str, delete_key: str):
     log.debug("Mode: DELETE")
     echo(style("**** Mode: DELETE ****".center(CMD_DELETE_WIDTH), bold=True, underline=True))
 
