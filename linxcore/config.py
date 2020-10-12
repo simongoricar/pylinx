@@ -6,7 +6,10 @@ import toml
 from .exceptions import ConfigException
 
 SCRIPT_DIR = os.path.join(os.path.dirname(__file__), "..")
-os.mkdir(os.path.join(SCRIPT_DIR, "logs"))
+
+LOGS_DIR = os.path.join(SCRIPT_DIR, "logs")
+if not os.path.isdir(LOGS_DIR):
+    os.mkdir(LOGS_DIR)
 
 
 class TOMLConfig:
