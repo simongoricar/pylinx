@@ -12,6 +12,8 @@ A lightweight CLI for uploading and managing your files on a [**linx-server**](h
 [Poetry](https://python-poetry.org/) is the dependency manager of choice here, so you need to have it installed. Additionally, this is tested and used on Python 3.8+, but should work on older version down to 3.6, where f-strings were introduced.
 
 ## 2. Cloning and Poetry
+If you are not sure about what you are doing: skip everything but `3. Configuration` and run `win-install_pylinx_client.ps1` with powershell (prefferably [6+](https://github.com/PowerShell/PowerShell)).
+
 Clone this repository to a location of your choice. Next, execute `poetry install` in the root directory to create a virtualenv and install all necessary dependencies.
 If you know what you are doing: you can also use the requirements.txt file if you don't want to use Poetry for some reason.
 
