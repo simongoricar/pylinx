@@ -71,9 +71,15 @@ def cli(ctx: Context, working_dir: str, verbose: bool):
         default=None, help="what the delete key should be [default: random]")
 @option("--access-key", "-a",
         default=None, help="what the access key (file password) should be", show_default=True)
+@option("--filename", "-f",
+        default=None, help="custom filename [default: same as file]")
 @argument("file_path")
 @pass_context
-def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str, access_key: str, file_path: str):
+def linx_upload(ctx: Context, randomize: str, expiry_days: int,
+                delete_key: str, access_key: str, file_path: str, filename: str):
+    """
+    Upload the provided file.
+    """
     working_dir = ctx.obj['working_dir']
     is_verbose: bool = ctx.obj["verbose"]
 
@@ -87,7 +93,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
     echo(style("**** Mode: UPLOAD ****".center(CMD_UPLOAD_WIDTH), bold=True, underline=True))
 
     full_path = os.path.abspath(os.path.join(working_dir, file_path))
-    file_name = os.path.basename(full_path)
+    file_name = filename if filename is not None else os.path.basename(full_path)
     randomize = "yes" if randomize is True else "no"
     expiry_sec = expiry_days * 24 * 60 * 60
 
@@ -95,6 +101,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
     echo()
     echo(f"\tFull file path: \t" + style(full_path, fg="bright_black"))
     echo(f"\tRandomize file name: \t" + style(randomize, fg="bright_black"))
+    echo(f"\tFile name:\t\t" + style(file_name, fg="bright_black"))
     echo(f"\tExpire in: \t\t" + style(f"{expiry_days} days ({expiry_sec} seconds)", fg="bright_black"))
     echo(f"\tDelete key: \t\t" + style(delete_key, fg="bright_black"))
     echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
@@ -200,6 +207,9 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
 @argument("file_name")
 @pass_context
 def linx_info(ctx: Context, file_name: str):
+    """
+    Show information about the file.
+    """
     is_verbose: bool = ctx.obj["verbose"]
 
     log.debug("Mode: INFO")
@@ -263,10 +273,14 @@ def linx_info(ctx: Context, file_name: str):
 
 @cli.command(name="delete", aliases=["d"], help="Delete a file with the provided delete key")
 @argument("file_name")
-# TODO should this take the default if none is provided?
 @argument("delete_key")
 @pass_context
 def linx_delete(ctx: Context, file_name: str, delete_key: str):
+    """
+    Delete a file.
+    """
+    is_verbose: bool = ctx.obj["verbose"]
+
     log.debug("Mode: DELETE")
     echo(style("**** Mode: DELETE ****".center(CMD_DELETE_WIDTH), bold=True, underline=True))
 
@@ -287,7 +301,17 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
         return
 
     log.debug(f"Deleting file '{file_name}' with delete key '{delete_key}'")
-    resp = requests.delete(full_url, headers=headers)
+    try:
+        resp = requests.delete(full_url, headers=headers)
+    except requests.ConnectionError as e:
+        echo(style("Could not send the request.", fg="bright_red"))
+        if is_verbose:
+            echo(f"requests.ConnectionError: '{e}'")
+
+        return
+
+    if is_verbose:
+        echo(f"Response status {resp.status_code}, content '{resp.content}'")
 
     decoded_content = bytes(resp.content).decode("utf-8")
     was_deleted = resp.status_code == 200 and decoded_content == "DELETED"
@@ -300,7 +324,11 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
     else:
         echo()
         echo(style(f"Could not delete file.".center(CMD_DELETE_WIDTH), fg="bright_red", bold=True))
-        echo(style(f"Status code: {resp.status_code}".center(CMD_DELETE_WIDTH), fg="bright_black"))
+
+        if resp.status_code == 401:
+            echo(style(f"Incorrect delete key!".center(CMD_DELETE_WIDTH), fg="bright_black"))
+        else:
+            echo(style(f"Status code: {resp.status_code}".center(CMD_DELETE_WIDTH), fg="bright_black"))
 
         log.debug(f"File could not be deleted (status {resp.status_code})")
 
