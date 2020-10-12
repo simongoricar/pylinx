@@ -24,3 +24,6 @@ Write-Output "You can now run the CLI with 'linx.ps1 <parameters>'. "
 Write-Output "If not, manually install Powershell 6/7 from https://github.com/PowerShell/PowerShell"
 Write-Output ""
 Write-Output "If you ever move this directory, please remove the old PATH and virtualenv, then run this script again."
+
+Write-Output "Press enter to continue/exit."
+cmd /c pause | out-null
