@@ -5,6 +5,7 @@ from json import loads
 from urllib.parse import urljoin
 import datetime
 
+from magic import from_file
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import pyperclip
@@ -73,7 +74,7 @@ def cli(ctx: Context, working_dir: str, verbose: bool):
         default=None, help="what the access key (file password) should be", show_default=True)
 @option("--filename", "-f",
         default=None, help="custom filename [default: same as file]")
-@argument("file_path")
+@argument("file_path", type=str)
 @pass_context
 def linx_upload(ctx: Context, randomize: str, expiry_days: int,
                 delete_key: str, access_key: str, file_path: str, filename: str):
@@ -94,6 +95,8 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
     full_path = os.path.abspath(os.path.join(working_dir, file_path))
     file_name = filename if filename is not None else os.path.basename(full_path)
+    file_content_type = from_file(full_path, mime=True)
+
     randomize = "yes" if randomize is True else "no"
     expiry_sec = expiry_days * 24 * 60 * 60
 
@@ -101,7 +104,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     echo()
     echo(f"\tFull file path: \t" + style(full_path, fg="bright_black"))
     echo(f"\tRandomize file name: \t" + style(randomize, fg="bright_black"))
-    echo(f"\tFile name:\t\t" + style(file_name, fg="bright_black"))
+    echo(f"\tFile name:\t\t" + style(f"{file_name} ({file_content_type})", fg="bright_black"))
     echo(f"\tExpire in: \t\t" + style(f"{expiry_days} days ({expiry_sec} seconds)", fg="bright_black"))
     echo(f"\tDelete key: \t\t" + style(delete_key, fg="bright_black"))
     echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
@@ -137,9 +140,8 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     log.debug(f"Linx-Randomize: {randomize} | Linx-Delete-Key: {delete_key} "
               f"| Linx-Access-Key: {access_key} | Linx-Expiry: {expiry_sec} ({expiry_days} days)")
 
-    # TODO use python-magic as an optional dependency to get mime type
     mp = MultipartEncoder(
-        fields={"file": (file_name, file_upload)}
+        fields={"file": (file_name, file_upload, file_content_type)}
     )
 
     with progressbar(length=mp.len) as bar:
