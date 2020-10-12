@@ -1,7 +1,10 @@
-﻿.idea
-config
-logs
+﻿## IDEs
+.idea
 
+## Python
 __pycache__
 
+## Sensitive and unnecessary files
+config
+logs
 *.old

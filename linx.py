@@ -8,7 +8,6 @@ import datetime
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import pyperclip
-import magic
 from click import command, echo, style, option, argument, getchar, progressbar, group
 from hurry.filesize import size
 
@@ -45,7 +44,7 @@ def cli():
     pass
 
 
-@command(name="upload")
+@command(name="upload", help="Upload a file")
 @option("--randomize", "-r",
         default="no", help="whether to randomize the file name", show_default=True)
 @option("--expiry-days", "-e",
@@ -97,9 +96,9 @@ def linx_upload(randomize: str, expiry_days: int, delete_key: str, access_key: s
     log.debug(f"Linx-Randomize: {randomize} | Linx-Delete-Key: {delete_key} "
               f"| Linx-Access-Key: {access_key} | Linx-Expiry: {expiry_sec} ({expiry_days} days)")
 
-    file_content_type = magic.Magic(mime=True).from_file(file_path)
+    # TODO use python-magic as an optional dependency to get mime type
     mp = MultipartEncoder(
-        fields={"file": (file_name, file_upload, file_content_type)}
+        fields={"file": (file_name, file_upload)}
     )
 
     with progressbar(length=mp.len) as bar:
@@ -149,7 +148,7 @@ def linx_upload(randomize: str, expiry_days: int, delete_key: str, access_key: s
             pyperclip.copy(direct_url)
 
 
-@command(name="info")
+@command(name="info", help="Show information about a file (expiration, size, ...)")
 @argument("file_name")
 def linx_info(file_name: str):
     log.debug("Mode: INFO")
@@ -198,9 +197,9 @@ def linx_info(file_name: str):
     echo()
 
 
-@command(name="delete")
+@command(name="delete", help="Delete a file with the provided delete key")
 @argument("file_name")
-# TODO should this take the default if none if provided?
+# TODO should this take the default if none is provided?
 @argument("delete_key")
 def linx_delete(file_name: str, delete_key: str):
     log.debug("Mode: DELETE")
@@ -244,6 +243,7 @@ def linx_delete(file_name: str, delete_key: str):
 cli.add_command(linx_upload)
 cli.add_command(linx_info)
 cli.add_command(linx_delete)
+
 #################
 # Run the appropriate command
 #################
