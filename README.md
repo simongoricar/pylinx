@@ -13,6 +13,7 @@ A lightweight CLI for uploading and managing your files on a [**linx-server**](h
 
 ## 2. Cloning and Poetry
 Clone this repository to a location of your choice. Next, execute `poetry install` in the root directory to create a virtualenv and install all necessary dependencies.
+If you know what you are doing: you can also use the requirements.txt file if you don't want to use Poetry for some reason.
 
 ## 3. Configuration
 Copy and rename the provided example configuration file.

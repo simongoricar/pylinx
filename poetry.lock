@@ -40,7 +40,6 @@ dev = ["flake8", "flake8-import-order", "tox-travis", "pytest", "pytest-cov", "c
 reference = "b13302f1f626c52805c14363934a42c4167fbdaf"
 type = "git"
 url = "https://github.com/click-contrib/click-aliases.git"
-
 [[package]]
 category = "main"
 description = "Cross-platform colored terminal text."
