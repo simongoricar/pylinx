@@ -5,6 +5,10 @@
 __pycache__
 
 ## Sensitive and unnecessary files
-config
+config/linxConfig.toml
+!config/linxConfig.EXAMPLE.toml
+
+config/*.ps1
+
 logs
 *.old

@@ -1,0 +1,9 @@
+[Server]
+# Base url of your linx-server instance
+linx_instance_url = "https://greatestlinxserver.com"
+# API key you generated and put into your authfile
+linx_api_key = "great-password"
+
+[Defaults]
+# A custom default delete key
+delete_key = "defaultdeletekey"
