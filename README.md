@@ -21,7 +21,7 @@ Fill out the instance url and api key values.
 
 ## 4. Quick access
 *(optional, but recommended)* Lastly, set it up for quick access. 
-On Windows, you would add the directory to your PATH and then use the provided `linx.ps1` script to call the script as usual `linx.ps1 upload ...`.
+On Windows, you would add the directory to your PATH and then use the provided `linx.ps1` script to call the script from anywhere in the powershell/comand prompt as usual `linx.ps1 upload ...`.
 
 # Usage
 ```bash
