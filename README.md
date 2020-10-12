@@ -16,6 +16,7 @@ Clone this repository to a location of your choice. Next, execute `poetry instal
 
 ## 3. Configuration
 Copy and rename the provided example configuration file.
+Fill out the instance url and api key values.
 
 ## 4. Quick access
 *(optional, but recommended)* Lastly, set it up for quick access. 
