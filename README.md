@@ -22,4 +22,21 @@ Copy and rename the provided example configuration file.
 On Windows, you would add the directory to your PATH and then use the provided `linx.ps1` script to call the script as usual `linx.ps1 upload ...`.
 
 # Usage
-See `linx.py --help` for all commands.
+```bash
+Usage: linx.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --working-dir TEXT  Manually sets the working directory. Any relative
+                      argument paths use this as the base.
+
+  --verbose           Print more information
+  --version
+  --help              Show this message and exit.
+
+Commands:
+  delete (d)  Delete a file with the provided delete key
+  info (i)    Show information about a file (expiration, size, ...)
+  upload (u)  Upload a file
+```
+
+See `linx.py <command> --help` for subcommand help.
