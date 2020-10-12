@@ -2,13 +2,14 @@
 import os
 import logging
 from json import loads
-from urllib.parse import urljoin, urlencode
+from urllib.parse import urljoin
 import datetime
 
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import pyperclip
-from click import command, echo, style, option, argument, getchar, progressbar, group, pass_context, Context
+from click import echo, style, option, argument, getchar, progressbar, group, pass_context, Context
+from click_aliases import ClickAliasedGroup
 from hurry.filesize import size
 
 from linxcore.utilities import Integer, generate_random_pass
@@ -47,7 +48,7 @@ def print_version(ctx: Context, _, value):
 #################
 # Commands
 #################
-@group()
+@group(cls=ClickAliasedGroup)
 @option("--working-dir",
         default=os.curdir,
         help="Manually sets the working directory. Any relative argument paths use this as the base.")
@@ -61,7 +62,7 @@ def cli(ctx: Context, working_dir: str, verbose: bool):
     ctx.obj["verbose"] = verbose
 
 
-@command(name="upload", help="Upload a file")
+@cli.command(name="upload", aliases=["u"], help="Upload a file")
 @option("--randomize", "-r", is_flag=True, help="whether to randomize the file name", show_default=True)
 @option("--expiry-days", "-e",
         default=30, help="for how many days should the file be retained (maximum is set by the server!)",
@@ -87,7 +88,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
 
     full_path = os.path.abspath(os.path.join(working_dir, file_path))
     file_name = os.path.basename(full_path)
-    randomize = "yes" if randomize.lower() == "yes" else "no"
+    randomize = "yes" if randomize is True else "no"
     expiry_sec = expiry_days * 24 * 60 * 60
 
     echo("** Please confirm this configuration **\n".center(CMD_UPLOAD_WIDTH))
@@ -195,7 +196,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int, delete_key: str,
             pyperclip.copy(direct_url)
 
 
-@command(name="info", help="Show information about a file (expiration, size, ...)")
+@cli.command(name="info", aliases=["i"], help="Show information about a file (expiration, size, ...)")
 @argument("file_name")
 @pass_context
 def linx_info(ctx: Context, file_name: str):
@@ -260,7 +261,7 @@ def linx_info(ctx: Context, file_name: str):
     echo()
 
 
-@command(name="delete", help="Delete a file with the provided delete key")
+@cli.command(name="delete", aliases=["d"], help="Delete a file with the provided delete key")
 @argument("file_name")
 # TODO should this take the default if none is provided?
 @argument("delete_key")
@@ -303,10 +304,6 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
 
         log.debug(f"File could not be deleted (status {resp.status_code})")
 
-
-cli.add_command(linx_upload)
-cli.add_command(linx_info)
-cli.add_command(linx_delete)
 
 #################
 # Run the appropriate command
