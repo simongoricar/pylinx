@@ -3,7 +3,21 @@ name = "linx-pyclient"
 version = "0.2.0"
 description = "A lightweight CLI for uploading and managing your files on a linx-server instance."
 authors = ["Simon Goričar <simon.peter.goricar@gmail.com>"]
+repository = "https://github.com/DefaultSimon/linx-pyclient"
+readme = "README.md"
 license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Topic :: Communications :: File Sharing",
+]
+include = [
+    "README.md"
+]
+packages = [
+    { include = "pylinx" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -19,6 +33,9 @@ python-magic = "^0.4.18"
 python-magic-bin = "^0.4.14"
 
 [tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+pylinx = "pylinx:cli"
 
 [build-system]
 requires = ["poetry>=0.12"]

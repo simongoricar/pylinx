@@ -3,6 +3,8 @@
 
 ## Python
 __pycache__
+dist
+
 
 ## Sensitive and unnecessary files
 config/linxConfig.toml

@@ -1,5 +1,9 @@
-#! python3
+import sys
 import os
+
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(ROOT_DIR)
+
 import logging
 from json import loads
 from urllib.parse import urljoin
@@ -13,9 +17,8 @@ from click import echo, style, option, argument, getchar, progressbar, group, pa
 from click_aliases import ClickAliasedGroup
 from hurry.filesize import size
 
-from linxcore.utilities import Integer, generate_random_pass
-from linxcore.config import API_KEY, INSTANCE_URL, SCRIPT_DIR
-
+from pylinx.linxcore.utilities import Integer, generate_random_pass
+from pylinx.linxcore.config import API_KEY, INSTANCE_URL, SCRIPT_DIR
 
 __version__ = "1.0.0"
 
@@ -29,7 +32,7 @@ CMD_DELETE_WIDTH = 56
 
 log = logging.getLogger("LinxPython")
 log.setLevel(logging.DEBUG)
-fh = logging.FileHandler(os.path.join(SCRIPT_DIR, "logs/linx.log"))
+fh = logging.FileHandler(os.path.join(SCRIPT_DIR, "./logs/linx.log"))
 fh.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -55,12 +58,16 @@ def print_version(ctx: Context, _, value):
         help="Manually sets the working directory. Any relative argument paths use this as the base.")
 @option("--verbose", is_flag=True, help="Print more information")
 @option("--version", is_flag=True, is_eager=True, expose_value=False, callback=print_version)
+# TODO -y option to skip prompts
 @pass_context
 def cli(ctx: Context, working_dir: str, verbose: bool):
     # Pass the working_dir in a Context to other commands
     ctx.ensure_object(dict)
     ctx.obj["working_dir"] = working_dir
     ctx.obj["verbose"] = verbose
+
+    if verbose:
+        echo(f"Working directory: '{working_dir}'")
 
 
 @cli.command(name="upload", aliases=["u"], help="Upload a file")
@@ -141,7 +148,11 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
               f"| Linx-Access-Key: {access_key} | Linx-Expiry: {expiry_sec} ({expiry_days} days)")
 
     mp = MultipartEncoder(
-        fields={"file": (file_name, file_upload, file_content_type)}
+        fields={
+            "file": (file_name, file_upload, file_content_type),
+            "expires": str(expiry_sec),
+            "access_key": str(access_key),
+        }
     )
 
     with progressbar(length=mp.len) as bar:
@@ -157,10 +168,22 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
         monitor = MultipartEncoderMonitor(mp, progress_callback)
 
         try:
-            resp = requests.post(
-                url=urljoin(INSTANCE_URL, "upload"), data=monitor,
+            req = requests.Request(
+                method="POST", url=urljoin(INSTANCE_URL, "upload"), data=monitor,
                 headers={**full_headers, **{"Content-Type": mp.content_type}}
             )
+            prep = req.prepare()
+
+            if is_verbose:
+                formatted_headers = "\n".join(f"{k}: {v}" for k, v in prep.headers.items())
+                echo(f"Sending HTTP POST request:"
+                     f"\n{'=' * 10}\n"
+                     f"{prep.method} {prep.url}\n"
+                     f"{formatted_headers.replace(API_KEY, '[REDACTED]')}\n\n"
+                     f"[multipart-form length: {prep.body.len}]\n\n"
+                     f"{'=' * 10}")
+
+            resp = requests.session().send(prep)
         except requests.ConnectionError as e:
             echo(style("Could not send the request.", fg="bright_red"))
             if is_verbose:
@@ -184,16 +207,21 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
         if is_verbose:
             echo(f"Response JSON: '{data}'\n")
 
-        file_url = data.get("url")
-        direct_url = data.get("direct_url")
+        resp_file_url = data.get("url")
+        resp_direct_url = data.get("direct_url")
 
-        log.debug(f"File uploaded | url: {file_url} | direct url: {direct_url}")
+        resp_access_key = data.get("access_key")
+        resp_delete_key = data.get("delete_key")
+
+        log.debug(f"File uploaded | url: {resp_file_url} | direct url: {resp_direct_url}")
 
         echo("\n")
         echo(style("== File uploaded! ==".center(CMD_UPLOAD_WIDTH), bold=True))
         echo()
-        echo(style(f"\tFile url: \t\t{file_url}", fg="bright_green"))
-        echo(style(f"\tDirect url: \t\t{direct_url}", fg="green"))
+        echo(style(f"\tFile url: \t\t{resp_file_url}", fg="bright_green"))
+        echo(style(f"\tDirect url: \t\t{resp_direct_url}", fg="green"))
+        echo()
+        echo(style(f"\tAccess Key: {resp_access_key if resp_access_key != '' else '[None]'} | Delete Key: {resp_delete_key}", fg="bright_black"))
 
         echo()
         echo("Copy direct url to clipboard? [y/n] ", nl=False)
@@ -202,7 +230,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
         if char == "y":
             log.debug("Copied URL to clipboard.")
-            pyperclip.copy(direct_url)
+            pyperclip.copy(resp_direct_url)
 
 
 @cli.command(name="info", aliases=["i"], help="Show information about a file (expiration, size, ...)")
@@ -262,7 +290,8 @@ def linx_info(ctx: Context, file_name: str):
     size_raw = int(data.get("size"))
     size_human = size(size_raw)
 
-    log.debug(f"File info | expiry epoch: {expiry} | mime: {mime} | sha256: {sha256sum} | size: {size_raw} bytes ({size_human})")
+    log.debug(f"File info | expiry epoch: {expiry} | mime: {mime} "
+              f"| sha256: {sha256sum} | size: {size_raw} bytes ({size_human})")
 
     echo(style(f"** FILE: {file_name} **".center(CMD_INFO_WIDTH), bold=True))
     echo()
@@ -273,7 +302,7 @@ def linx_info(ctx: Context, file_name: str):
     echo()
 
 
-@cli.command(name="delete", aliases=["d"], help="Delete a file with the provided delete key")
+@cli.command(name="delete", aliases=["del"], help="Delete a file with the provided delete key")
 @argument("file_name")
 @argument("delete_key")
 @pass_context

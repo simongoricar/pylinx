@@ -6,7 +6,9 @@ $originalLocation = $PWD
 # Move into the script directory
 Set-Location $PSScriptRoot
 
-# Run the script inside a poetry shell
-poetry run python linx.py --working-dir $originalLocation @args
-
-Set-Location $originalLocation
+try {
+    # Run the script inside a poetry shell
+    poetry run python ./pylinx/linx.py --working-dir $originalLocation @args
+} finally {
+    Set-Location $originalLocation
+}

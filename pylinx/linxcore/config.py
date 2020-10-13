@@ -5,7 +5,7 @@ import toml
 
 from .exceptions import ConfigException
 
-SCRIPT_DIR = os.path.join(os.path.dirname(__file__), "..")
+SCRIPT_DIR = os.path.join(os.path.dirname(__file__), "../..")
 
 LOGS_DIR = os.path.join(SCRIPT_DIR, "logs")
 if not os.path.isdir(LOGS_DIR):
