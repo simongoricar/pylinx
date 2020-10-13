@@ -3,8 +3,11 @@
 
 ## Python
 __pycache__
-dist
 
+dist
+*.egg-info
+
+.venv
 
 ## Sensitive and unnecessary files
 config/linxConfig.toml

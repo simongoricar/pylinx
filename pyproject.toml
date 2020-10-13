@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "linx-pyclient"
-version = "0.2.0"
+version = "1.1dev.0"
 description = "A lightweight CLI for uploading and managing your files on a linx-server instance."
 authors = ["Simon Goričar <simon.peter.goricar@gmail.com>"]
 repository = "https://github.com/DefaultSimon/linx-pyclient"
@@ -13,7 +13,10 @@ classifiers = [
     "Topic :: Communications :: File Sharing",
 ]
 include = [
-    "README.md"
+    "README.md",
+    "LICENSE.md",
+    "pyproject.toml",
+    "config/linxConfig.EXAMPLE.toml"
 ]
 packages = [
     { include = "pylinx" }

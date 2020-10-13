@@ -18,9 +18,7 @@ from click_aliases import ClickAliasedGroup
 from hurry.filesize import size
 
 from pylinx.linxcore.utilities import Integer, generate_random_pass
-from pylinx.linxcore.config import SCRIPT_DIR, load_config, LinxConfig
-
-__version__ = "1.0.0"
+from pylinx.linxcore.config import ROOT_DIR, PROJECT_VERSION, load_config, LinxConfig
 
 CMD_UPLOAD_WIDTH = 72
 CMD_INFO_WIDTH = 72
@@ -32,7 +30,7 @@ CMD_DELETE_WIDTH = 56
 
 log = logging.getLogger("LinxPython")
 log.setLevel(logging.DEBUG)
-fh = logging.FileHandler(os.path.join(SCRIPT_DIR, "./logs/linx.log"))
+fh = logging.FileHandler(os.path.join(ROOT_DIR, "./logs/linx.log"))
 fh.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -45,7 +43,7 @@ def print_version(ctx: Context, _, value):
     if not value or ctx.resilient_parsing:
         return
 
-    echo(f"linx-pyclient version: {__version__}")
+    echo(f"linx-pyclient version: {PROJECT_VERSION}")
     ctx.exit()
 
 
@@ -55,7 +53,7 @@ def print_version(ctx: Context, _, value):
 @option("--working-dir",
         default=os.curdir,
         help="Manually sets the working directory. Any relative argument paths use this as the base.")
-@option("--verbose", is_flag=True, help="Print more information")
+@option("-v", "--verbose", is_flag=True, help="Print more information")
 @option("--config", default=None, help="Set the custom configuration file")
 @option("--version", is_flag=True, is_eager=True, expose_value=False, callback=print_version)
 # TODO -y option to skip prompts

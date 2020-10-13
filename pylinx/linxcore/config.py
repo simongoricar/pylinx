@@ -6,9 +6,9 @@ from click import echo, style, get_current_context, Context
 
 from .exceptions import ConfigException
 
-SCRIPT_DIR = os.path.join(os.path.dirname(__file__), "../..")
+ROOT_DIR = os.path.join(os.path.dirname(__file__), "../..")
 
-LOGS_DIR = os.path.join(SCRIPT_DIR, "logs")
+LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 if not os.path.isdir(LOGS_DIR):
     os.mkdir(LOGS_DIR)
 
@@ -21,7 +21,7 @@ class TOMLConfig:
 
     @classmethod
     def from_filename(cls, file_path: str):
-        with open(file_path, "r") as config_file:
+        with open(file_path, "r", encoding="utf-8") as config_file:
             data = toml.loads(config_file.read())
 
         return cls(data)
@@ -64,6 +64,12 @@ class LinxConfig:
         self.API_KEY = self._table_server.get("linx_api_key")
 
 
+pyproject_path = os.path.realpath(os.path.join(ROOT_DIR, "pyproject.toml"))
+pyproject_config = TOMLConfig.from_filename(pyproject_path)
+
+PROJECT_VERSION = pyproject_config.get_table("tool").get_table("poetry").get("version")
+
+
 def load_config(config_file: str) -> LinxConfig:
     # Find and use the proper configuration file
     # Search order is as follows:
@@ -71,11 +77,10 @@ def load_config(config_file: str) -> LinxConfig:
     # 2. Current directory
     # 3. ~user/.config/pylinx/linxConfig.toml
     ctx: Context = get_current_context()
-    final_config_file = None
 
     if config_file is not None:
         # Load the file passed with --config
-        final_config_file = os.path.realpath(config_file.replace("%linxpath%", SCRIPT_DIR))
+        final_config_file = os.path.realpath(config_file.replace("%linxpath%", ROOT_DIR))
 
         if not os.path.isfile(final_config_file):
             echo(style("Configuration: filename passed via --config does not exist.", fg="bright_red"))
