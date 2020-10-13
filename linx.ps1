@@ -8,7 +8,7 @@ Set-Location $PSScriptRoot
 
 try {
     # Run the script inside a poetry shell
-    poetry run python ./pylinx/linx.py --working-dir $originalLocation @args
+    poetry run python ./pylinx/linx.py --working-dir $originalLocation --config %linxpath%/config/linxConfig.toml @args
 } finally {
     Set-Location $originalLocation
 }

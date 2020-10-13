@@ -2,6 +2,7 @@ import os
 from typing import Any
 
 import toml
+from click import echo, style, get_current_context, Context
 
 from .exceptions import ConfigException
 
@@ -45,15 +46,63 @@ class TOMLConfig:
             return data
 
 
-config = TOMLConfig.from_filename(os.path.join(SCRIPT_DIR, "./config/linxConfig.toml"))
+class LinxConfig:
+    __slots__ = (
+        "_config", "_table_server",
+        "INSTANCE_URL", "API_KEY"
+    )
 
-##########
-# Tables
-##########
-TABLE_SERVER = config.get_table("Server")
+    def __init__(self, config_dict: TOMLConfig):
+        self._config = config_dict
 
-##########
-# Server
-##########
-INSTANCE_URL = TABLE_SERVER.get("linx_instance_url")
-API_KEY = TABLE_SERVER.get("linx_api_key")
+        self._table_server = self._config.get_table("Server")
+
+        ##########
+        # Server
+        ##########
+        self.INSTANCE_URL = self._table_server.get("linx_instance_url")
+        self.API_KEY = self._table_server.get("linx_api_key")
+
+
+def load_config(config_file: str) -> LinxConfig:
+    # Find and use the proper configuration file
+    # Search order is as follows:
+    # 1. --config switch (%linxpath% expands to the parent directory of pylinx - see linx.ps1 for a use case)
+    # 2. Current directory
+    # 3. ~user/.config/pylinx/linxConfig.toml
+    ctx: Context = get_current_context()
+    final_config_file = None
+
+    if config_file is not None:
+        # Load the file passed with --config
+        final_config_file = os.path.realpath(config_file.replace("%linxpath%", SCRIPT_DIR))
+
+        if not os.path.isfile(final_config_file):
+            echo(style("Configuration: filename passed via --config does not exist.", fg="bright_red"))
+            ctx.exit(1)
+        else:
+            echo(f"Configuration: using '{final_config_file}'")
+    else:
+        # Look in the current directory
+        final_config_file = os.path.realpath(os.path.join(ctx.obj["working_dir"], "linxConfig.toml"))
+
+        if os.path.isfile(final_config_file):
+            # Load the config in current directory
+            echo(f"Configuration: using current directory '{final_config_file}'")
+        else:
+            # Finally, try to load the user config
+            final_config_file = os.path.realpath(
+                os.path.join(os.path.expanduser("~"), ".config/pylinx/linxConfig.toml")
+            )
+
+            if not os.path.isfile(final_config_file):
+                echo(style(f"Configuration: no --config file passed, neither current directory "
+                           f"nor '{final_config_file}' contain linxConfig.toml."
+                           f"\nPlease either pass the file with --config manually or create the configuration "
+                           f"in your current directory or in the user .config/pylinx directory."))
+                ctx.exit(1)
+            else:
+                echo(f"Configuration: using user home '{final_config_file}'")
+
+    config = TOMLConfig.from_filename(final_config_file)
+    return LinxConfig(config)

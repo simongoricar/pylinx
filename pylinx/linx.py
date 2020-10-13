@@ -18,7 +18,7 @@ from click_aliases import ClickAliasedGroup
 from hurry.filesize import size
 
 from pylinx.linxcore.utilities import Integer, generate_random_pass
-from pylinx.linxcore.config import API_KEY, INSTANCE_URL, SCRIPT_DIR
+from pylinx.linxcore.config import SCRIPT_DIR, load_config, LinxConfig
 
 __version__ = "1.0.0"
 
@@ -49,27 +49,32 @@ def print_version(ctx: Context, _, value):
     ctx.exit()
 
 
-#################
-# Commands
-#################
+# TODO config management command
+
 @group(cls=ClickAliasedGroup)
 @option("--working-dir",
         default=os.curdir,
         help="Manually sets the working directory. Any relative argument paths use this as the base.")
 @option("--verbose", is_flag=True, help="Print more information")
+@option("--config", default=None, help="Set the custom configuration file")
 @option("--version", is_flag=True, is_eager=True, expose_value=False, callback=print_version)
 # TODO -y option to skip prompts
 @pass_context
-def cli(ctx: Context, working_dir: str, verbose: bool):
+def cli(ctx: Context, working_dir: str, verbose: bool, config: str):
     # Pass the working_dir in a Context to other commands
     ctx.ensure_object(dict)
     ctx.obj["working_dir"] = working_dir
     ctx.obj["verbose"] = verbose
+    ctx.obj["configFile"] = config
+    ctx.obj["config"] = load_config(config)
 
     if verbose:
         echo(f"Working directory: '{working_dir}'")
 
 
+#################
+# Commands
+#################
 @cli.command(name="upload", aliases=["u"], help="Upload a file")
 @option("--randomize", "-r", is_flag=True, help="whether to randomize the file name", show_default=True)
 @option("--expiry-days", "-e",
@@ -89,6 +94,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     Upload the provided file.
     """
     working_dir = ctx.obj['working_dir']
+    config: LinxConfig = ctx.obj["config"]
     is_verbose: bool = ctx.obj["verbose"]
 
     if delete_key is None:
@@ -127,7 +133,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
     full_headers = {
         # Auth and options
-        "Linx-Api-Key": API_KEY,
+        "Linx-Api-Key": config.API_KEY,
         "Linx-Randomize": randomize,
         "Linx-Delete-Key": delete_key,
         "Linx-Expiry": str(expiry_sec),
@@ -143,7 +149,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
         }
 
     file_upload = open(full_path, "rb")
-    log.debug(f"Uploading file \"{os.path.basename(full_path)}\" to instance {INSTANCE_URL}")
+    log.debug(f"Uploading file \"{os.path.basename(full_path)}\" to instance {config.INSTANCE_URL}")
     log.debug(f"Linx-Randomize: {randomize} | Linx-Delete-Key: {delete_key} "
               f"| Linx-Access-Key: {access_key} | Linx-Expiry: {expiry_sec} ({expiry_days} days)")
 
@@ -169,7 +175,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
         try:
             req = requests.Request(
-                method="POST", url=urljoin(INSTANCE_URL, "upload"), data=monitor,
+                method="POST", url=urljoin(config.INSTANCE_URL, "upload"), data=monitor,
                 headers={**full_headers, **{"Content-Type": mp.content_type}}
             )
             prep = req.prepare()
@@ -179,7 +185,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
                 echo(f"Sending HTTP POST request:"
                      f"\n{'=' * 10}\n"
                      f"{prep.method} {prep.url}\n"
-                     f"{formatted_headers.replace(API_KEY, '[REDACTED]')}\n\n"
+                     f"{formatted_headers.replace(config.API_KEY, '[REDACTED]')}\n\n"
                      f"[multipart-form length: {prep.body.len}]\n\n"
                      f"{'=' * 10}")
 
@@ -221,7 +227,8 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
         echo(style(f"\tFile url: \t\t{resp_file_url}", fg="bright_green"))
         echo(style(f"\tDirect url: \t\t{resp_direct_url}", fg="green"))
         echo()
-        echo(style(f"\tAccess Key: {resp_access_key if resp_access_key != '' else '[None]'} | Delete Key: {resp_delete_key}", fg="bright_black"))
+        echo(style(f"\tAccess Key: {resp_access_key if resp_access_key != '' else '[None]'} "
+                   f"| Delete Key: {resp_delete_key}", fg="bright_black"))
 
         echo()
         echo("Copy direct url to clipboard? [y/n] ", nl=False)
@@ -241,11 +248,12 @@ def linx_info(ctx: Context, file_name: str):
     Show information about the file.
     """
     is_verbose: bool = ctx.obj["verbose"]
+    config: LinxConfig = ctx.obj["config"]
 
     log.debug("Mode: INFO")
     echo(style("**** Mode: INFO ****".center(CMD_INFO_WIDTH), bold=True, underline=True))
 
-    full_url = urljoin(INSTANCE_URL, file_name)
+    full_url = urljoin(config.INSTANCE_URL, file_name)
     headers = {
         "Accept": "application/json",
     }
@@ -311,13 +319,14 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
     Delete a file.
     """
     is_verbose: bool = ctx.obj["verbose"]
+    config: LinxConfig = ctx.obj["config"]
 
     log.debug("Mode: DELETE")
     echo(style("**** Mode: DELETE ****".center(CMD_DELETE_WIDTH), bold=True, underline=True))
 
-    full_url = urljoin(INSTANCE_URL, file_name)
+    full_url = urljoin(config.INSTANCE_URL, file_name)
     headers = {
-        "Linx-Api-Key": API_KEY,
+        "Linx-Api-Key": config.API_KEY,
         "Linx-Delete-Key": delete_key,
         "Accept": "application/json",
     }
