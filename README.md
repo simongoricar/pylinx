@@ -38,12 +38,12 @@ This will create a local virtualenv using [Poetry](https://python-poetry.org/) t
 
 Bash and compatible shells:
 ```shell script
-curl -sSL https://raw.githubusercontent.com/DefaultSimon/linx-pyclient/master/scripts/install_linx-pyclient.py | python -
+curl -sSL https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py | python -
 ```
 
 On Windows with Powershell
 ```powershell
-(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/linx-pyclient/master/scripts/install_pylinx.py -UseBasicParsing).Content | python -
+(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing).Content | python -
 ```
 
 You will still be asked to add the resulting path to your `PATH` variable manually.
@@ -51,8 +51,8 @@ You will still be asked to add the resulting path to your `PATH` variable manual
 ### b) Pip install
 In cases where other methods are unavailable or fail, you can install pylinx using either
 
-`python -m pip install pylinx` or 
-`python -m pip install git+https://github.com/DefaultSimon/linx-pyclient.git`
+`python -m pip install pylinx` (last release) or 
+`python -m pip install git+https://github.com/DefaultSimon/pylinx.git` (up-to-date with the repository)
 
 Do note that this will install packages to your global install, so other methods using Poetry might be preffered.
 
