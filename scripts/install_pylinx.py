@@ -2,7 +2,7 @@ import os
 import sys
 from shutil import copy2
 
-REPO = "https://github.com/DefaultSimon/linx-pyclient.git"
+REPO = "https://github.com/DefaultSimon/pylinx.git"
 
 print("This script will install linx-pyclient into your current directory.")
 print("It is assumed that you have these prerequisites installed and available in your path:\n"
@@ -14,8 +14,8 @@ input("If you want to continue, press enter.")
 
 print(f"1) Cloning {REPO}...")
 sys.stdout.flush()
-os.system(f"git clone {REPO} linx-pyclient")
-os.chdir("linx-pyclient")
+os.system(f"git clone {REPO} pylinx")
+os.chdir("pylinx")
 
 print("2) Output of poetry --version:")
 sys.stdout.flush()

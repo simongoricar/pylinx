@@ -57,7 +57,7 @@ def print_version(ctx: Context, _, value):
     if not value or ctx.resilient_parsing:
         return
 
-    echo(f"linx-pyclient version: {PROJECT_VERSION}")
+    echo(f"pylinx version: {PROJECT_VERSION}")
     ctx.exit()
 
 
