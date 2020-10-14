@@ -8,18 +8,22 @@ import logging
 from json import loads
 from urllib.parse import urljoin
 import datetime
+from shutil import copy2
 
 from magic import from_file
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import pyperclip
-from click import echo, style, option, argument, getchar, progressbar, group, pass_context, Context
+from click import echo, style, option, argument, getchar, progressbar, group, pass_context, Context, edit
+# noinspection PyProtectedMember
+from click._termui_impl import WIN
 from click_aliases import ClickAliasedGroup
 from hurry.filesize import size
 
 from pylinx.linxcore.utilities import Integer, generate_random_pass
 from pylinx.linxcore.config import ROOT_DIR, PROJECT_VERSION, load_config, LinxConfig
 
+CMD_SETUP_WIDTH = 72
 CMD_UPLOAD_WIDTH = 72
 CMD_INFO_WIDTH = 72
 CMD_DELETE_WIDTH = 56
@@ -39,6 +43,16 @@ fh.setFormatter(formatter)
 log.addHandler(fh)
 
 
+def edit_file(file_name: str):
+    # This fixes handling of editors on windows
+    # click doesn't properly handle spaces in editor installation paths,
+    # so we force notepad
+    if WIN:
+        return edit(editor="notepad", filename=file_name)
+    else:
+        return edit(filename=file_name)
+
+
 def print_version(ctx: Context, _, value):
     if not value or ctx.resilient_parsing:
         return
@@ -46,8 +60,6 @@ def print_version(ctx: Context, _, value):
     echo(f"linx-pyclient version: {PROJECT_VERSION}")
     ctx.exit()
 
-
-# TODO config management command
 
 @group(cls=ClickAliasedGroup)
 @option("--working-dir",
@@ -64,7 +76,10 @@ def cli(ctx: Context, working_dir: str, verbose: bool, config: str):
     ctx.obj["working_dir"] = working_dir
     ctx.obj["verbose"] = verbose
     ctx.obj["configFile"] = config
-    ctx.obj["config"] = load_config(config)
+
+    # Don't throw configuration errors on `pylinx setup`
+    if ctx.invoked_subcommand != "setup":
+        ctx.obj["config"] = load_config(config)
 
     if verbose:
         echo(f"Working directory: '{working_dir}'")
@@ -73,6 +88,110 @@ def cli(ctx: Context, working_dir: str, verbose: bool, config: str):
 #################
 # Commands
 #################
+@cli.command(name="configure", help="Manage your configuration")
+@pass_context
+def linx_config(ctx: Context):
+    working_dir = ctx.obj['working_dir']
+
+    log.debug("Mode: CONFIGURE")
+    echo(style("**** Mode: CONFIGURE ****".center(CMD_SETUP_WIDTH), bold=True, underline=True))
+
+    def get_choice(choices: list) -> str:
+        choice = getchar(echo=True).lower()
+        echo()
+
+        if choice not in choices:
+            echo(style("Invalid choice.", fg="bright_red"))
+            return ctx.exit()
+
+        if choice == "c":
+            echo("Cancelled.")
+            return ctx.exit()
+
+        return choice
+
+    # Ask the user for the action
+    echo()
+    echo("What would you like to do?")
+    echo(style("\t1) ", fg="bright_green") + "Generate an empty configuration")
+    echo(style("\t2) ", fg="bright_green") + "Interactively generate a new configuration")
+    echo(style("\t3) ", fg="bright_green") + "Edit your current confguration")
+    echo()
+    echo(style("Please choose [1/2/[C]ancel]: ", fg="bright_black"), nl=False)
+
+    choice_what = get_choice(["1", "2", "3", "c"])
+
+    # Ask the user for the location
+    echo("\n")
+    echo("Where would you like to place it?" if choice_what != "3" else "Which one would you like to edit?")
+    echo(style("\t1) ", fg="bright_green") + "Current directory")
+    echo(style("\t2) ", fg="bright_green") + "User home directory (~/.config/pylinx/linxConfig.toml)")
+    echo(style("\nIf you are not sure what to choose, choose \"2) User home directory\".", fg="bright_black"))
+    echo()
+    echo(style("Please choose [1/2/[C]ancel]: ", fg="bright_black"), nl=False)
+
+    choice_where = get_choice(["1", "2", "c"])
+
+    # Parse destination
+    if choice_where == "1":
+        config_file_destination = os.path.realpath(os.path.join(working_dir, "linxConfig.toml"))
+    elif choice_where == "2":
+        config_file_destination = os.path.realpath(
+            os.path.join(os.path.expanduser("~"), ".config/pylinx/linxConfig.toml")
+        )
+    else:
+        return ctx.exit()
+
+    # Ask for confirmation if it already exists
+    if os.path.isfile(config_file_destination) and choice_what != "3":
+        echo(f"\nThis configuration file "
+             + style(f"('{config_file_destination}')", fg="bright_black")
+             + " already exists.\n")
+        echo(style("Do you want to edit the current one instead? [[E]dit/[[O]verwrite]] ", fg="bright_white"), nl=False)
+
+        choice_overwrite = getchar(echo=True).lower()
+        echo()
+        if choice_overwrite == "e":
+            echo("Opening an editor - save and close when done.")
+            edit_file(config_file_destination)
+            echo("Editor closed, exiting.")
+            return ctx.exit()
+        elif choice_overwrite == "o":
+            pass
+        else:
+            echo(style("Invalid choice.", fg="bright_red"))
+            return ctx.exit()
+
+    if choice_what == "1" or choice_what == "2":
+        # Make sure an empty configuration exists
+        config_file_example = os.path.realpath(os.path.join(ROOT_DIR, "config/linxConfig.EXAMPLE.toml"))
+        if not os.path.isfile(config_file_example):
+            echo(style("Could not generate an empty configuration: missing files - bad install", fg="bright_red"))
+            return ctx.exit(1)
+
+        if choice_what == "1":
+            # Generate an empty configuration
+            echo(f"Copying blank configuration to '{config_file_destination}'")
+            copy2(config_file_example, config_file_destination)
+
+            echo("Blank configuration copied.")
+
+        elif choice_what == "2":
+            # Interactively generate a new configuration
+            echo(f"Copying blank configuration to '{config_file_destination}'")
+            copy2(config_file_example, config_file_destination)
+
+            echo("Opening an editor - save and close when done.")
+            edit_file(config_file_destination)
+            echo("Editor closed, exiting.")
+    elif choice_what == "3":
+        if not os.path.isfile(config_file_destination)
+
+        echo("Opening an editor - save and close when done.")
+        edit_file(config_file_destination)
+        echo("Editor closed, exiting.")
+
+
 @cli.command(name="upload", aliases=["u"], help="Upload a file")
 @option("--randomize", "-r", is_flag=True, help="whether to randomize the file name", show_default=True)
 @option("--expiry-days", "-e",
@@ -122,7 +241,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     echo("\n")
 
     echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH), nl=False)
-    char = getchar().lower()
+    char = getchar(echo=True).lower()
     echo()
 
     if char != "y":
@@ -180,6 +299,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
             if is_verbose:
                 formatted_headers = "\n".join(f"{k}: {v}" for k, v in prep.headers.items())
+                # noinspection PyUnresolvedReferences
                 echo(f"Sending HTTP POST request:"
                      f"\n{'=' * 10}\n"
                      f"{prep.method} {prep.url}\n"
@@ -230,7 +350,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
         echo()
         echo("Copy direct url to clipboard? [y/n] ", nl=False)
-        char = getchar().lower()
+        char = getchar(echo=True).lower()
         echo()
 
         if char == "y":
@@ -331,7 +451,7 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
 
     echo()
     echo("Are you sure you want to continue? [y/n] ", nl=False)
-    char = getchar().lower()
+    char = getchar(echo=True).lower()
     echo()
 
     if char != "y":

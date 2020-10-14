@@ -73,7 +73,8 @@ PROJECT_VERSION = pyproject_config.get_table("tool").get_table("poetry").get("ve
 def load_config(config_file: str) -> LinxConfig:
     # Find and use the proper configuration file
     # Search order is as follows:
-    # 1. --config switch (%linxpath% expands to the parent directory of pylinx - see linx.ps1 for a use case)
+    # 1. --config switch
+    #    (%linxpath% expands to the parent directory of pylinx install - see pylinx.ps1 and pylinx.sh for a use case)
     # 2. Current directory
     # 3. ~user/.config/pylinx/linxConfig.toml
     ctx: Context = get_current_context()

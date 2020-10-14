@@ -1,5 +1,5 @@
 ## Proxy for the python script to run inside a virtualenv
-# If you prefer this, you can add linx.ps1 to your PATH and execute it with any
+# If you prefer this, you can add pylinx.ps1 to your PATH and execute it with any
 # arguments as if you were calling the script directly
 
 $originalLocation = $PWD
