@@ -44,7 +44,7 @@ curl -sSL https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/i
 
 On Windows with Powershell
 ```powershell
-(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing -OutFile install_pylinx.py) && python install_pylinx.py
+(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing -OutFile install_pylinx.py); python install_pylinx.py
 ```
 
 You will still be asked to add the resulting path to your `PATH` variable manually.
