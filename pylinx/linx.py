@@ -88,7 +88,7 @@ def cli(ctx: Context, working_dir: str, verbose: bool, config: str):
 #################
 # Commands
 #################
-@cli.command(name="configure", help="Manage your configuration")
+@cli.command(name="configure", help="Manage your configuration (interactive)")
 @pass_context
 def linx_config(ctx: Context):
     working_dir = ctx.obj['working_dir']

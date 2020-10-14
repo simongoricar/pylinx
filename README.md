@@ -19,6 +19,7 @@ Options:
   --help              Show this message and exit.
 
 Commands:
+  configure     Manage your configuration (interactive)
   delete (del)  Delete a file with the provided delete key
   info (i)      Show information about a file (expiration, size, ...)
   upload (u)    Upload a file
