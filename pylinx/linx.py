@@ -114,7 +114,7 @@ def linx_config(ctx: Context):
     echo()
     echo("What would you like to do?")
     echo(style("\t1) ", fg="bright_green") + "Generate an empty configuration")
-    echo(style("\t2) ", fg="bright_green") + "Interactively generate a new configuration")
+    echo(style("\t2) ", fg="bright_green") + "Generate a new configuration and edit it")
     echo(style("\t3) ", fg="bright_green") + "Edit your current confguration")
     echo()
     echo(style("Please choose [1/2/[C]ancel]: ", fg="bright_black"), nl=False)
