@@ -54,6 +54,10 @@ if os.path.isfile(PYLINX_SCRIPT):
     print(f"Copying '{PYLINX_SCRIPT}' to '{FINAL_DIR}'")
     copy2(PYLINX_SCRIPT, FINAL_DIR)
 
+os.chdir("..")
+if os.path.isfile("install_pylinx.py"):
+    os.remove("install_pylinx.py")
+
 print("\n== DONE! ==")
 print("To finish the installation, please add the following path to your PATH variable:\n")
 print(FINAL_DIR.center(82))

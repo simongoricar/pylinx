@@ -77,4 +77,6 @@ While you can edit the configuration manually, pylinx also provides a handly com
 ## 4. Extras
 
 ### 4.1. Right-click context menu on Windows
-TODO
+If you are a Windows user, you might benefit from a quicker way of uploading files.
+The script in `scripts/win-add_to_context_menu.py` will add pylinx to the right-click (context) menu.
+Simply run `python win-add_to_context_menu.py` and follow the instructions.
