@@ -171,6 +171,10 @@ def linx_config(ctx: Context):
 
         if choice_what == "1":
             # Generate an empty configuration
+            config_file_destination_dir = os.path.dirname(config_file_destination)
+            if not os.path.isdir(config_file_destination_dir):
+                os.mkdir(config_file_destination_dir)
+
             echo(f"Copying blank configuration to '{config_file_destination}'")
             copy2(config_file_example, config_file_destination)
 
@@ -185,7 +189,9 @@ def linx_config(ctx: Context):
             edit_file(config_file_destination)
             echo("Editor closed, exiting.")
     elif choice_what == "3":
-        if not os.path.isfile(config_file_destination)
+        if not os.path.isfile(config_file_destination):
+            echo(style("Configuration file doesn't exist.", fg="bright_red"))
+            return ctx.exit(1)
 
         echo("Opening an editor - save and close when done.")
         edit_file(config_file_destination)
