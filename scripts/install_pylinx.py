@@ -41,6 +41,7 @@ print("5) Copying pylinx executable")
 PYLINX_BINARY = os.path.join(SCRIPT_DIR, "pylinx")
 PYLINX_BINARY_EXE = os.path.join(SCRIPT_DIR, "pylinx.exe")
 PYLINX_SCRIPT = os.path.join(SCRIPT_DIR, "pylinx-script.py")
+PYLINX_SCRIPT_CMD = os.path.join(SCRIPT_DIR, "pylinx-script.cmd")
 
 if os.path.isfile(PYLINX_BINARY):
     print(f"Copying '{PYLINX_BINARY}' to '{FINAL_DIR}'")
@@ -53,6 +54,10 @@ if os.path.isfile(PYLINX_BINARY_EXE):
 if os.path.isfile(PYLINX_SCRIPT):
     print(f"Copying '{PYLINX_SCRIPT}' to '{FINAL_DIR}'")
     copy2(PYLINX_SCRIPT, FINAL_DIR)
+
+if os.path.isfile(PYLINX_SCRIPT_CMD):
+    print(f"Copying '{PYLINX_SCRIPT_CMD}' to '{FINAL_DIR}'")
+    copy2(PYLINX_SCRIPT_CMD, FINAL_DIR)
 
 os.chdir("..")
 if os.path.isfile("install_pylinx.py"):
