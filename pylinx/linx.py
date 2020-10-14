@@ -78,7 +78,7 @@ def cli(ctx: Context, working_dir: str, verbose: bool, config: str):
     ctx.obj["configFile"] = config
 
     # Don't throw configuration errors on `pylinx setup`
-    if ctx.invoked_subcommand != "setup":
+    if ctx.invoked_subcommand != "configure":
         ctx.obj["config"] = load_config(config)
 
     if verbose:
