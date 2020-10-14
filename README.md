@@ -38,12 +38,12 @@ This will create a local virtualenv using [Poetry](https://python-poetry.org/) t
 
 Bash and compatible shells:
 ```shell script
-curl -sSL https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py | python -
+curl -sSL https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py --output install_pylinx.py && python install_pylinx.py
 ```
 
 On Windows with Powershell
 ```powershell
-(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing).Content | python -
+(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing -OutFile install_pylinx.py) && python install_pylinx.py
 ```
 
 You will still be asked to add the resulting path to your `PATH` variable manually.
@@ -54,14 +54,27 @@ In cases where other methods are unavailable or fail, you can install pylinx usi
 `python -m pip install pylinx` (last release) or 
 `python -m pip install git+https://github.com/DefaultSimon/pylinx.git` (up-to-date with the repository)
 
-Do note that this will install packages to your global install, so other methods using Poetry might be preffered.
+Do note that this will install packages to your global install, so the first methodw with Poetry and virtualenv might be preffered.
 
-### c) "Portable Install" <sub>(advanced)</sub>
-Clone this repository to a location of your choosing. Next, execute `poetry install` in the root directory. After Poetry is done, add the root directory to your `PATH` variable.
+A note for *Windows* users: using this type of install, you will not be able to add pylinx to your right-click "context" menu using the provided script.
 
-Now, depending on your platform, use `pylinx.sh` or `pylinx.ps1` as a "proxy" for the installation (call normally, e.g. `linx.sh --help`).
+### c) Manual install <sub>(advanced)</sub>
+If you do not want to run the install script, you can also do the installation manually.
+- clone this repository to a location of your choosing
+- execute `poetry install` in the root directory
+- copy `pylinx`/`pylinx.exe` and `pylinx-script.py` to somewhere in your `PATH` (or, as the installer does it - make a bin directory, copy the two files there and add them to your `PATH` variable)
 
 ## 3. Configuration
-Before you start using the CLI, you must copy and rename the provided example configuration file. Fill out `linx_instance_url` and `linx_api_key` (corresponds to `authfile` on the [server](https://github.com/andreimarcu/linx-server)).
+Pylinx uses a single TOML configuration file named `linxConfig.toml`. A blank configuration file is available under [config/linxConfig.EXAMPLE.toml](https://github.com/DefaultSimon/pylinx/blob/master/config/linxConfig.EXAMPLE.toml).
 
-You can also do this by simply calling ``
+Pylinx offers three ways of specifying your configuration file. First, if `--config [filepath]` is passed, it looks no further.
+Otherwise, it looks at the current directory, then `~/.config/pylinx`.
+
+If no configuration file can be found in any of the above places, pylinx will refuse to run.
+
+While you can edit the configuration manually, pylinx also provides a handly command for doing this a bit more interactively - `pylinx configure`.
+
+## 4. Extras
+
+### 4.1. Right-click context menu on Windows
+TODO

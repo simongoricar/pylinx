@@ -169,12 +169,12 @@ def linx_config(ctx: Context):
             echo(style("Could not generate an empty configuration: missing files - bad install", fg="bright_red"))
             return ctx.exit(1)
 
+        config_file_destination_dir = os.path.dirname(config_file_destination)
+        if not os.path.isdir(config_file_destination_dir):
+            os.mkdir(config_file_destination_dir)
+
         if choice_what == "1":
             # Generate an empty configuration
-            config_file_destination_dir = os.path.dirname(config_file_destination)
-            if not os.path.isdir(config_file_destination_dir):
-                os.mkdir(config_file_destination_dir)
-
             echo(f"Copying blank configuration to '{config_file_destination}'")
             copy2(config_file_example, config_file_destination)
 
@@ -246,7 +246,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
     echo("\n")
 
-    echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH), nl=False)
+    echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH).rstrip(" ") + " ", nl=False)
     char = getchar(echo=True).lower()
     echo()
 

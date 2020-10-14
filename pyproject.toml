@@ -16,7 +16,8 @@ include = [
     "README.md",
     "LICENSE.md",
     "pyproject.toml",
-    "config/linxConfig.EXAMPLE.toml"
+    "config/linxConfig.EXAMPLE.toml",
+    "assets/upload-cloud.ico"
 ]
 packages = [
     { include = "pylinx" }

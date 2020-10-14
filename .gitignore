@@ -4,6 +4,7 @@
 ## Python
 __pycache__
 
+bin
 dist
 *.egg-info
 

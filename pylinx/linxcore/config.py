@@ -103,9 +103,10 @@ def load_config(config_file: str) -> LinxConfig:
 
             if not os.path.isfile(final_config_file):
                 echo(style(f"Configuration: no --config file passed, neither current directory "
-                           f"nor '{final_config_file}' contain linxConfig.toml."
-                           f"\nPlease either pass the file with --config manually or create the configuration "
-                           f"in your current directory or in the user .config/pylinx directory."))
+                           f"nor \"~/.config/pylinx\" contain linxConfig.toml."
+                           f"\nPlease pass the file with --config manually, create the configuration "
+                           f"in your current directory or in \"~/.config/pylinx\" directory "
+                           f"or do so interactively with \"pylinx configure\"."))
                 ctx.exit(1)
             else:
                 echo(f"Configuration: using user home '{final_config_file}'")
