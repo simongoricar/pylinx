@@ -1,7 +1,7 @@
 certifi==2020.6.20
 chardet==3.0.4
 click==7.1.2
--e git+https://github.com/click-contrib/click-aliases.git@b13302f1f626c52805c14363934a42c4167fbdaf#egg=click-aliases
+click-aliases==1.0.1
 colorama==0.4.3
 hurry.filesize==0.9
 idna==2.10

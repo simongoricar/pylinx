@@ -32,9 +32,9 @@ pyperclip = "^1.8.1"
 click = "^7.1.2"
 "hurry.filesize" = "^0.9"
 colorama = "^0.4.3"
-click-aliases = {git = "https://github.com/click-contrib/click-aliases.git"}
 python-magic = "^0.4.18"
 python-magic-bin = "^0.4.14"
+click-aliases = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 
