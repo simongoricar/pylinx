@@ -16,6 +16,7 @@ Options:
   -v, --verbose       Print more information
   --config TEXT       Set the custom configuration file
   --version
+  -y, --yes           Skip interactive questions, if possible
   --help              Show this message and exit.
 
 Commands:
