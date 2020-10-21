@@ -68,13 +68,15 @@ def print_version(ctx: Context, _, value):
 @option("-v", "--verbose", is_flag=True, help="Print more information")
 @option("--config", default=None, help="Set the custom configuration file")
 @option("--version", is_flag=True, is_eager=True, expose_value=False, callback=print_version)
+@option("-y", "--yes", is_flag=True, help="Skip interactive questions, if possible")
 # TODO -y option to skip prompts
 @pass_context
-def cli(ctx: Context, working_dir: str, verbose: bool, config: str):
+def cli(ctx: Context, working_dir: str, verbose: bool, config: str, yes: bool):
     # Pass the working_dir in a Context to other commands
     ctx.ensure_object(dict)
     ctx.obj["working_dir"] = working_dir
     ctx.obj["verbose"] = verbose
+    ctx.obj["yes"] = yes
     ctx.obj["configFile"] = config
 
     # Don't throw configuration errors on `pylinx configure`
@@ -218,6 +220,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     """
     working_dir = ctx.obj['working_dir']
     config: LinxConfig = ctx.obj["config"]
+    no_confirm: bool = ctx.obj["yes"]
     is_verbose: bool = ctx.obj["verbose"]
 
     if delete_key is None:
@@ -246,13 +249,14 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
     echo("\n")
 
-    echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH).rstrip(" ") + " ", nl=False)
-    char = getchar(echo=True).lower()
-    echo()
+    if not no_confirm:
+        echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH).rstrip(" ") + " ", nl=False)
+        char = getchar(echo=True).lower()
+        echo()
 
-    if char != "y":
-        echo(style("Exiting.", bold=True))
-        return
+        if char != "y":
+            echo(style("Exiting.", bold=True))
+            return
 
     full_headers = {
         # Auth and options
@@ -354,14 +358,15 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
         echo(style(f"\tAccess Key: {resp_access_key if resp_access_key != '' else '[None]'} "
                    f"| Delete Key: {resp_delete_key}", fg="bright_black"))
 
-        echo()
-        echo("Copy direct url to clipboard? [y/n] ", nl=False)
-        char = getchar(echo=True).lower()
-        echo()
+        if not no_confirm:
+            echo()
+            echo("Copy direct url to clipboard? [y/n] ", nl=False)
+            char = getchar(echo=True).lower()
+            echo()
 
-        if char == "y":
-            log.debug("Copied URL to clipboard.")
-            pyperclip.copy(resp_direct_url)
+            if char == "y":
+                log.debug("Copied URL to clipboard.")
+                pyperclip.copy(resp_direct_url)
 
 
 @cli.command(name="info", aliases=["i"], help="Show information about a file (expiration, size, ...)")
@@ -443,6 +448,7 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
     Delete a file.
     """
     is_verbose: bool = ctx.obj["verbose"]
+    no_confirm: bool = ctx.obj["yes"]
     config: LinxConfig = ctx.obj["config"]
 
     log.debug("Mode: DELETE")
@@ -455,14 +461,15 @@ def linx_delete(ctx: Context, file_name: str, delete_key: str):
         "Accept": "application/json",
     }
 
-    echo()
-    echo("Are you sure you want to continue? [y/n] ", nl=False)
-    char = getchar(echo=True).lower()
-    echo()
+    if not no_confirm:
+        echo()
+        echo("Are you sure you want to continue? [y/n] ", nl=False)
+        char = getchar(echo=True).lower()
+        echo()
 
-    if char != "y":
-        echo(style("Exiting.", bold=True))
-        return
+        if char != "y":
+            echo(style("Exiting.", bold=True))
+            return
 
     log.debug(f"Deleting file '{file_name}' with delete key '{delete_key}'")
     try:
