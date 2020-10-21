@@ -10,7 +10,6 @@ from urllib.parse import urljoin
 import datetime
 from shutil import copy2
 
-from magic import from_file
 import requests
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import pyperclip
@@ -234,7 +233,6 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
     full_path = os.path.abspath(os.path.join(working_dir, file_path))
     file_name = filename if filename is not None else os.path.basename(full_path)
-    file_content_type = from_file(full_path, mime=True)
 
     randomize = "yes" if randomize is True else "no"
     expiry_sec = expiry_days * 24 * 60 * 60
@@ -243,7 +241,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     echo()
     echo(f"\tFull file path: \t" + style(full_path, fg="bright_black"))
     echo(f"\tRandomize file name: \t" + style(randomize, fg="bright_black"))
-    echo(f"\tFile name:\t\t" + style(f"{file_name} ({file_content_type})", fg="bright_black"))
+    echo(f"\tFile name:\t\t" + style(f"{file_name}", fg="bright_black"))
     echo(f"\tExpire in: \t\t" + style(f"{expiry_days} days ({expiry_sec} seconds)", fg="bright_black"))
     echo(f"\tDelete key: \t\t" + style(delete_key, fg="bright_black"))
     echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
@@ -282,7 +280,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
     mp = MultipartEncoder(
         fields={
-            "file": (file_name, file_upload, file_content_type),
+            "file": (file_name, file_upload),
             "expires": str(expiry_sec),
             "access_key": str(access_key),
         }
