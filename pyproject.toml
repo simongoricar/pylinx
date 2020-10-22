@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "linx-pyclient"
+name = "pylinx"
 version = "1.2.0"
 description = "A lightweight CLI for uploading and managing your files on a linx-server instance."
 authors = ["Simon Goričar <simon.peter.goricar@gmail.com>"]
