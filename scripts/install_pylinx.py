@@ -29,19 +29,27 @@ print("4) Installing packages into a virtualenv")
 sys.stdout.flush()
 os.system("poetry install")
 
-SCRIPT_DIR = os.path.realpath(os.path.join(os.path.dirname(os.curdir), ".venv/Scripts"))
+SCRIPT_DIR_WIN = os.path.realpath(os.path.join(os.path.dirname(os.curdir), ".venv/Scripts"))
+SCRIPT_DIR_LINUX = os.path.realpath(os.path.join(os.path.dirname(os.curdir), ".venv/bin"))
+
+CORRECT_SCRIPT_DIR = None
+if os.path.isdir(SCRIPT_DIR_WIN):
+    CORRECT_SCRIPT_DIR = SCRIPT_DIR_WIN
+elif os.path.isdir(SCRIPT_DIR_LINUX):
+    CORRECT_SCRIPT_DIR = SCRIPT_DIR_LINUX
+else:
+    raise Exception("Something went wrong while installing the virtualenv (could not find Scripts/bin directory).")
+
 FINAL_DIR = os.path.realpath(os.path.join(os.path.dirname(os.curdir), "bin"))
-if not os.path.isdir(SCRIPT_DIR):
-    raise Exception("Something went wrong while installing the virtualenv.")
 if not os.path.isdir(FINAL_DIR):
     os.mkdir(FINAL_DIR)
 
 print("5) Copying pylinx executable")
 
-PYLINX_BINARY = os.path.join(SCRIPT_DIR, "pylinx")
-PYLINX_BINARY_EXE = os.path.join(SCRIPT_DIR, "pylinx.exe")
-PYLINX_SCRIPT = os.path.join(SCRIPT_DIR, "pylinx-script.py")
-PYLINX_SCRIPT_CMD = os.path.join(SCRIPT_DIR, "pylinx.cmd")
+PYLINX_BINARY = os.path.join(CORRECT_SCRIPT_DIR, "pylinx")
+PYLINX_BINARY_EXE = os.path.join(CORRECT_SCRIPT_DIR, "pylinx.exe")
+PYLINX_SCRIPT = os.path.join(CORRECT_SCRIPT_DIR, "pylinx-script.py")
+PYLINX_SCRIPT_CMD = os.path.join(CORRECT_SCRIPT_DIR, "pylinx.cmd")
 
 if os.path.isfile(PYLINX_BINARY):
     print(f"Copying '{PYLINX_BINARY}' to '{FINAL_DIR}'")
