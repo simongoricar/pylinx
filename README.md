@@ -56,9 +56,9 @@ In cases where other methods are unavailable or fail, you can install pylinx usi
 `python -m pip install pylinx` (last release) or 
 `python -m pip install git+https://github.com/DefaultSimon/pylinx.git` (up-to-date with the repository)
 
-Do note that this will install packages to your global install, so the first methodw with Poetry and virtualenv might be preffered.
+Do note that this will install packages to your global install, so the first method with Poetry and virtualenv might be preffered.
 
-A note for *Windows* users: using this type of install, you will not be able to add pylinx to your right-click "context" menu using the provided script.
+A note for *Windows* users: using this type of install, you will not be able to add pylinx to your right-click "context" menu using the provided scripts.
 
 ### c) Manual install <sub>(advanced)</sub>
 If you do not want to run the install script, you can also do the installation manually.
