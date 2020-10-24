@@ -69,6 +69,7 @@ if os.path.isfile(PYLINX_SCRIPT_CMD):
 
 os.chdir("..")
 if os.path.isfile("install_pylinx.py"):
+    print("Removing install_pylinx.py script.")
     os.remove("install_pylinx.py")
 
 print("\n== DONE! ==")
