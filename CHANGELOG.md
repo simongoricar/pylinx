@@ -1,3 +1,6 @@
+1.3
+- Added: `default_expiry_days` setting in the configuration file, no longer hardcoded to 30 days
+
 1.2
 - Added: `-y / --yes` flag to skip interactive prompts
 - Changed: removed unnecessary dependency "python-magic"

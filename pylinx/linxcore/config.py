@@ -48,20 +48,26 @@ class TOMLConfig:
 
 class LinxConfig:
     __slots__ = (
-        "_config", "_table_server",
-        "INSTANCE_URL", "API_KEY"
+        "_config", "_table_server", "_table_defaults",
+        "INSTANCE_URL", "API_KEY", "DEFAULT_EXPIRY_DAYS"
     )
 
     def __init__(self, config_dict: TOMLConfig):
         self._config = config_dict
 
         self._table_server = self._config.get_table("Server")
+        self._table_defaults = self._config.get_table("Defaults")
 
         ##########
         # Server
         ##########
         self.INSTANCE_URL = self._table_server.get("linx_instance_url")
         self.API_KEY = self._table_server.get("linx_api_key")
+
+        ##########
+        # Server
+        ##########
+        self.DEFAULT_EXPIRY_DAYS = self._table_defaults.get("default_expiry_days")
 
 
 pyproject_path = os.path.realpath(os.path.join(ROOT_DIR, "pyproject.toml"))

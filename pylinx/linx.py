@@ -202,8 +202,8 @@ def linx_config(ctx: Context):
 @cli.command(name="upload", aliases=["u"], help="Upload a file")
 @option("--randomize", "-r", is_flag=True, help="whether to randomize the file name", show_default=True)
 @option("--expiry-days", "-e",
-        default=30, help="for how many days should the file be retained (maximum is set by the server!)",
-        show_default=True)
+        default=None, help="for how many days should the file be retained (maximum is set by the server!)",
+        show_default=False)
 @option("--delete-key", "-d",
         default=None, help="what the delete key should be [default: random]")
 @option("--access-key", "-a",
@@ -228,6 +228,11 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
         delete_key = generate_random_pass(16)
 
+    if expiry_days is None:
+        echo(f"No --expiry-days, using default ({config.DEFAULT_EXPIRY_DAYS})")
+
+        expiry_days = config.DEFAULT_EXPIRY_DAYS
+
     log.debug("Mode: UPLOAD")
     echo(style("**** Mode: UPLOAD ****".center(CMD_UPLOAD_WIDTH), bold=True, underline=True))
 
@@ -246,6 +251,8 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     echo(f"\tDelete key: \t\t" + style(delete_key, fg="bright_black"))
     echo(f"\tAccess key: \t\t" + style(str(access_key), fg="bright_black"))
     echo("\n")
+
+    # TODO even more interactive options for changing these settings?
 
     if not no_confirm:
         echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH).rstrip(" ") + " ", nl=False)
