@@ -7,7 +7,7 @@ A lightweight CLI for uploading and managing your files on a [**linx-server**](h
 
 # Usage
 *Help command:*
-```shell script
+```
 Usage: pylinx [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -28,7 +28,7 @@ Commands:
 ```
 
 *Upload command help:*
-```shell script
+```
 Usage: pylinx upload [OPTIONS] FILE_PATH
 
   Upload a file
