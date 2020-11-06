@@ -6,6 +6,7 @@
 A lightweight CLI for uploading and managing your files on a [**linx-server**](https://github.com/andreimarcu/linx-server) instance.
 
 # Usage
+*Help command:*
 ```shell script
 Usage: pylinx [OPTIONS] COMMAND [ARGS]...
 
@@ -26,7 +27,24 @@ Commands:
   upload (u)    Upload a file
 ```
 
-See `pylinx <command> --help` for more detailed help.
+*Upload command help:*
+```shell script
+Usage: pylinx upload [OPTIONS] FILE_PATH
+
+  Upload a file
+
+Options:
+  -r, --randomize         whether to randomize the file name  [default: False]
+  -e, --expiry-days TEXT  for how many days should the file be retained
+                          (maximum is set by the server!)
+
+  -d, --delete-key TEXT   what the delete key should be [default: random]
+  -a, --access-key TEXT   what the access key (file password) should be
+  -f, --filename TEXT     custom filename [default: same as file]
+  --help                  Show this message and exit.
+```
+
+See `pylinx <command> --help` for more detailed help for each available command.
 
 # Installation
 
@@ -36,7 +54,7 @@ See `pylinx <command> --help` for more detailed help.
 ## 2. Installation
 ### a) Install script <sub>(recommended)</sub>
 The simplest way to install `pylinx` is to use the provided install script. 
-This will create a local virtualenv using [Poetry](https://python-poetry.org/) to avoid polluting your global package list.
+It will create a virtualenv in the current directory using [Poetry](https://python-poetry.org/) to avoid polluting your global package list.
 
 Bash and compatible shells:
 ```shell script
@@ -49,6 +67,7 @@ On Windows with Powershell
 ```
 
 You will still be asked to add the resulting path to your `PATH` variable manually.
+Uninstalling is as simple as updating `PATH` and removing the directory that was made.
 
 ### b) Pip install
 In cases where other methods are unavailable or fail, you can install pylinx using either
@@ -82,3 +101,5 @@ While you can edit the configuration manually, pylinx also provides a handly com
 If you are a Windows user, you might benefit from a quicker way of uploading files.
 The script in `scripts/win-add_to_context_menu.py` will add pylinx to the right-click (context) menu.
 Simply run `python win-add_to_context_menu.py` and follow the instructions.
+
+![](https://raw.githubusercontent.com/DefaultSimon/pylinx/master/assets/windows-integration-demo.gif)

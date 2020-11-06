@@ -1,9 +1,9 @@
 [Server]
 # Base url of your linx-server instance
-linx_instance_url = "https://greatestlinxserver.com"
+linx_instance_url = ""
 # API key you generated and put into your authfile
-linx_api_key = "great-password"
+linx_api_key = ""
 
 [Defaults]
 # Default amount of expiry in days
-default_expiry_days = 90
+default_expiry_days = 30
