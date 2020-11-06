@@ -71,9 +71,11 @@ You will still be asked to add the resulting path to your `PATH` variable manual
 Uninstalling is as simple as updating `PATH` and removing the directory that was made.
 
 ### b) Pip install
-In cases where other methods are unavailable or fail, you can install pylinx using either
+*NOTE: This package is publised on PyPi as `cli-pylinx`, not `pylinx`!*
 
-`python -m pip install pylinx` (latest release) or 
+If other methods are unavailable for you or fail, you can install pylinx using either
+
+`python -m pip install cli-pylinx` (latest release) or 
 `python -m pip install git+https://github.com/DefaultSimon/pylinx.git` (up-to-date with the repository)
 
 Note that this will install packages to your global Python install, so the first method with Poetry and virtualenv might be preffered.

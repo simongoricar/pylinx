@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "pylinx"
+name = "cli-pylinx"
 version = "1.3.0"
 description = "A lightweight CLI for uploading and managing your files on a linx-server instance."
 authors = ["Simon Goričar <simon.peter.goricar@gmail.com>"]
-repository = "https://github.com/DefaultSimon/linx-pyclient"
+repository = "https://github.com/DefaultSimon/pylinx"
 readme = "README.md"
 license = "MIT"
 classifiers = [
