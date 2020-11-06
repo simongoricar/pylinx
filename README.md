@@ -73,12 +73,17 @@ Uninstalling is as simple as updating `PATH` and removing the directory that was
 ### b) Pip install
 *NOTE: This package is publised on PyPi as `cli-pylinx`, not `pylinx`!*
 
-If other methods are unavailable for you or fail, you can install pylinx using either
+If other methods are unavailable for you or fail, you can install pylinx with
 
-`python -m pip install cli-pylinx` (latest release) or 
-`python -m pip install git+https://github.com/DefaultSimon/pylinx.git` (up-to-date with the repository)
+```
+python -m pip install cli-pylinx
+``` 
+or 
+```
+python -m pip install git+https://github.com/DefaultSimon/pylinx.git
+```
 
-Note that this will install packages to your global Python install, so the first method with Poetry and virtualenv might be preffered.
+Note that this will install packages to your global Python install, so the first method with Poetry might be preffered.
 
 A note for *Windows* users: using this type of install, you will not be able to add pylinx to your right-click "context" menu using the provided scripts.
 
