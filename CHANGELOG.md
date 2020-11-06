@@ -1,5 +1,7 @@
 1.3
 - Added: `default_expiry_days` setting in the configuration file, no longer hardcoded to 30 days
+- Changed: better documentation in README.md
+- Fixed: install script not working on all systems
 
 1.2
 - Added: `-y / --yes` flag to skip interactive prompts
