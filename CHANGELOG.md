@@ -1,3 +1,7 @@
+1.4
+- Fixed: some Windows context menu issues
+- Changed: verbose mode now shows more and normal mode a tiny bit less
+
 1.3
 - Added: `default_expiry_days` setting in the configuration file, no longer hardcoded to 30 days
 - Changed: better documentation in README.md

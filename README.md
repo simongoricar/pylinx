@@ -6,7 +6,7 @@
 A lightweight Python CLI for uploading and managing your files on a [**linx-server**](https://github.com/andreimarcu/linx-server) instance.
 
 # Usage
-*Help command:*
+*Main help command:*
 ```
 Usage: pylinx [OPTIONS] COMMAND [ARGS]...
 
@@ -49,22 +49,23 @@ See `pylinx [command] --help` for more detailed help for each available command.
 # Installation
 
 ## 1. Prerequisites
-[Poetry](https://python-poetry.org/) is the dependency manager of choice for this project, so you **need to have it installed** (or if you really don't want to use it, see **b) Pip install**). 
+[Poetry](https://python-poetry.org/) is the dependency manager of choice for this project, so you **need to have it installed** (or if you really don't want to use it, see *2b's pip install*). 
 Additionally, this project is compatible with Python 3.8+ (Poetry will insist on it).
 
 ## 2. Installation
 ### a) Install script <sub>(recommended)</sub>
-The simplest way to install `pylinx` is to use the provided install script. 
-It will create a virtualenv in the current directory using [Poetry](https://python-poetry.org/) to avoid polluting your global package list.
+If you already use Poetry, by far the simplest way to install `pylinx` is to use the provided install script. 
+It will create a virtualenv in the current directory using [Poetry](https://python-poetry.org/) to avoid polluting your global package list, 
+so run the below script in the directory you wish to install pylinx to.
 
 Bash with curl:
 ```shell script
-curl -sSL https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py --output install_pylinx.py && python install_pylinx.py
+curl -sSL https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py --output install_pylinx.py && python3 install_pylinx.py
 ```
 
 On Windows with Powershell
 ```powershell
-(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing -OutFile install_pylinx.py); python install_pylinx.py
+(Invoke-WebRequest -Uri https://raw.githubusercontent.com/DefaultSimon/pylinx/master/scripts/install_pylinx.py -UseBasicParsing -OutFile install_pylinx.py); python3 install_pylinx.py
 ```
 
 You will still be asked to add the resulting path to your `PATH` variable manually.
@@ -85,13 +86,7 @@ python -m pip install git+https://github.com/DefaultSimon/pylinx.git
 
 Note that this will install packages to your global Python install, so the first method with Poetry might be preffered.
 
-A note for *Windows* users: using this type of install, you will not be able to add pylinx to your right-click "context" menu using the provided scripts.
-
-### c) Manual install <sub>(advanced)</sub>
-If you do not want to run the install script, you can also do the installation manually.
-- clone this repository to a location of your choosing
-- execute `poetry install` in the root directory
-- copy the `pylinx` binary and `pylinx-script.py` script to somewhere in your `PATH` (or, as the installer does it - make a local `bin` directory, copy the two files there and add them to your `PATH` variable)
+A note for *Windows* users: using this type of install, you will not be able to add pylinx to your right-click "context" menu using the provided script.
 
 ## 3. Configuration
 Pylinx uses a single TOML configuration file named `linxConfig.toml`. A blank configuration file is available under [config/linxConfig.EXAMPLE.toml](https://github.com/DefaultSimon/pylinx/blob/master/config/linxConfig.EXAMPLE.toml).
