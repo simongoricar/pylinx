@@ -85,6 +85,8 @@ def load_config(config_file: str) -> LinxConfig:
     # 3. ~user/.config/pylinx/linxConfig.toml
     ctx: Context = get_current_context()
 
+    yes_flag = ctx.obj["yes"]
+
     if config_file is not None:
         # Load the file passed with --config
         final_config_file = os.path.realpath(config_file.replace("%linxpath%", ROOT_DIR))
@@ -92,13 +94,15 @@ def load_config(config_file: str) -> LinxConfig:
         if not os.path.isfile(final_config_file):
             echo(style("Configuration: filename passed via --config does not exist.", fg="bright_red"))
             ctx.exit(1)
-        else:
+        # Only print with --verbose
+        elif yes_flag is True:
             echo(f"Configuration: using '{final_config_file}'")
     else:
         # Look in the current directory
         final_config_file = os.path.realpath(os.path.join(ctx.obj["working_dir"], "linxConfig.toml"))
 
-        if os.path.isfile(final_config_file):
+        if os.path.isfile(final_config_file) and yes_flag is True:
+            # Only print with --verbose
             # Load the config in current directory
             echo(f"Configuration: using current directory '{final_config_file}'")
         else:
@@ -114,7 +118,8 @@ def load_config(config_file: str) -> LinxConfig:
                            f"in your current directory or in \"~/.config/pylinx\" directory "
                            f"or do so interactively with \"pylinx configure\"."))
                 ctx.exit(1)
-            else:
+            elif yes_flag is True:
+                # Only print with --verbose
                 echo(f"Configuration: using user home '{final_config_file}'")
 
     config = TOMLConfig.from_filename(final_config_file)

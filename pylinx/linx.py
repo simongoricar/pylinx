@@ -22,10 +22,18 @@ from hurry.filesize import size
 from pylinx.linxcore.utilities import Integer, generate_random_pass
 from pylinx.linxcore.config import ROOT_DIR, PROJECT_VERSION, load_config, LinxConfig
 
-CMD_SETUP_WIDTH = 72
-CMD_UPLOAD_WIDTH = 72
-CMD_INFO_WIDTH = 72
-CMD_DELETE_WIDTH = 56
+#################
+# Constants
+#################
+
+# Installation base path
+BASE_PATH = os.path.abspath(os.path.dirname(__file__))
+
+# What size to center text on certain commands
+CMD_SETUP_WIDTH = 70
+CMD_UPLOAD_WIDTH = 70
+CMD_INFO_WIDTH = 70
+CMD_DELETE_WIDTH = 70
 
 #################
 # Logging
@@ -68,10 +76,9 @@ def print_version(ctx: Context, _, value):
 @option("--config", default=None, help="Set the custom configuration file")
 @option("--version", is_flag=True, is_eager=True, expose_value=False, callback=print_version)
 @option("-y", "--yes", is_flag=True, help="Skip interactive questions, if possible")
-# TODO -y option to skip prompts
 @pass_context
 def cli(ctx: Context, working_dir: str, verbose: bool, config: str, yes: bool):
-    # Pass the working_dir in a Context to other commands
+    # Set up the Context for use in subcommands
     ctx.ensure_object(dict)
     ctx.obj["working_dir"] = working_dir
     ctx.obj["verbose"] = verbose
@@ -83,6 +90,7 @@ def cli(ctx: Context, working_dir: str, verbose: bool, config: str, yes: bool):
         ctx.obj["config"] = load_config(config)
 
     if verbose:
+        echo(f"Installation directory: '{BASE_PATH}'")
         echo(f"Working directory: '{working_dir}'")
 
 
@@ -92,7 +100,13 @@ def cli(ctx: Context, working_dir: str, verbose: bool, config: str, yes: bool):
 @cli.command(name="configure", help="Manage your configuration (interactive)")
 @pass_context
 def linx_config(ctx: Context):
-    working_dir = ctx.obj['working_dir']
+    working_dir = ctx.obj["working_dir"]
+    yes = ctx.obj["yes"]
+
+    if yes:
+        # This is a purely interactive command, can't use this flag.
+        echo(style("'-y'/'--yes' (non-interactive mode) flag is not supported for this command.", bold=True))
+        return
 
     log.debug("Mode: CONFIGURE")
     echo(style("**** Mode: CONFIGURE ****".center(CMD_SETUP_WIDTH), bold=True, underline=True))
@@ -118,7 +132,7 @@ def linx_config(ctx: Context):
     echo(style("\t2) ", fg="bright_green") + "Generate a new configuration and edit it")
     echo(style("\t3) ", fg="bright_green") + "Edit your current confguration")
     echo()
-    echo(style("Please choose [1/2/[C]ancel]: ", fg="bright_black"), nl=False)
+    echo("Please choose " + style("[1/2/[C]ancel]: ", fg="bright_black"), nl=False)
 
     choice_what = get_choice(["1", "2", "3", "c"])
 
@@ -129,7 +143,7 @@ def linx_config(ctx: Context):
     echo(style("\t2) ", fg="bright_green") + "User home directory (~/.config/pylinx/linxConfig.toml)")
     echo(style("\nIf you are not sure what to choose, choose \"2) User home directory\".", fg="bright_black"))
     echo()
-    echo(style("Please choose [1/2/[C]ancel]: ", fg="bright_black"), nl=False)
+    echo("Please choose " + style("[1/2/[C]ancel]: ", fg="bright_black"), nl=False)
 
     choice_where = get_choice(["1", "2", "c"])
 
@@ -219,7 +233,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
     """
     working_dir = ctx.obj['working_dir']
     config: LinxConfig = ctx.obj["config"]
-    no_confirm: bool = ctx.obj["yes"]
+    no_confirm_flag: bool = ctx.obj["yes"]
     is_verbose: bool = ctx.obj["verbose"]
 
     if delete_key is None:
@@ -254,7 +268,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
 
     # TODO even more interactive options for changing these settings?
 
-    if not no_confirm:
+    if not no_confirm_flag:
         echo("Continue? [y/n] ".center(CMD_UPLOAD_WIDTH).rstrip(" ") + " ", nl=False)
         char = getchar(echo=True).lower()
         echo()
@@ -363,7 +377,7 @@ def linx_upload(ctx: Context, randomize: str, expiry_days: int,
         echo(style(f"\tAccess Key: {resp_access_key if resp_access_key != '' else '[None]'} "
                    f"| Delete Key: {resp_delete_key}", fg="bright_black"))
 
-        if not no_confirm:
+        if not no_confirm_flag:
             echo()
             echo("Copy direct url to clipboard? [y/n] ", nl=False)
             char = getchar(echo=True).lower()
