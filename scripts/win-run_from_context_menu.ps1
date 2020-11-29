@@ -15,8 +15,12 @@ Set-Location $PSScriptRoot
 try {
     if ($args[0] -eq "-usePortable") {
         # Run the script inside a poetry shell
-        $rest, $otherArgs = $args;
+        $flag, $otherArgs = $args;
         poetry run python ../pylinx/linx.py --working-dir $originalLocation --config %linxpath%/config/linxConfig.toml @otherArgs
+    } elseif ($args[0] -eq "-useBinary") {
+        # TODO document and use this in win-add_to_context_menu.py
+        $flag, $otherArgs = $args;
+        pylinx @otherArgs
     } else {
         $pylinxBin = "$(poetry env info -p -n)\Scripts\pylinx.exe"
         & $pylinxBin @args
